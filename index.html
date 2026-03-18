@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<script>
+  (function() {
+    var theme = localStorage.getItem('theme');
+    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Empreendedores IEQ - Diretório da Comunidade</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#812990",
+          "accent": "#605be5",
+          "bg-light": "#f5f5f8",
+          "bg-dark": "#0f0f14",
+          "surface-dark": "#18181f",
+        },
+        fontFamily: { "display": ["Inter", "sans-serif"] },
+      },
+    },
+  }
+</script>
+<style>
+  * { scroll-behavior: smooth; }
+  .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(129,41,144,0.15); }
+  .gradient-text { background: linear-gradient(135deg, #812990, #605be5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-gradient { background: linear-gradient(135deg, #812990 0%, #605be5 100%); }
+  .glass { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .pill-active { background: linear-gradient(135deg, #812990, #605be5); color: white; }
+  .pill-inactive { background: white; border: 1px solid rgb(226 232 240); color: rgb(71 85 105); }
+  .dark .pill-inactive { background: #18181f; border-color: rgb(51 65 85); color: rgb(203 213 225); }
+  .pill-inactive:hover { background: rgba(129,41,144,0.05); border-color: rgba(129,41,144,0.3); color: #812990; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #812990; border-radius: 3px; }
+  .modal-open { overflow: hidden; }
+  .fade-in { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .whatsapp-btn { background: #25D366; }
+  .whatsapp-btn:hover { background: #1ebe57; }
+  .logo-img { filter: brightness(0); }
+  .dark .logo-img { filter: brightness(0) invert(1); }
+  .skeleton { background: linear-gradient(90deg,#e2e8f0 25%,#f0f4f8 50%,#e2e8f0 75%); background-size:200% 100%; animation: shimmer 1.5s infinite; }
+  .dark .skeleton { background: linear-gradient(90deg,#1e293b 25%,#273045 50%,#1e293b 75%); background-size:200% 100%; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+</head>
+<body class="bg-bg-light dark:bg-bg-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300">
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[300] hidden">
+  <div id="toastMsg" class="px-5 py-3 rounded-xl shadow-xl text-sm font-semibold text-white bg-slate-800"></div>
+</div>
+
+<!-- HEADER -->
+<header id="header" class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-surface-dark/95 glass px-4 md:px-10 py-3 sticky top-0 z-50 transition-all">
+  <a href="index.html" class="flex items-center gap-2 shrink-0">
+    <img src="primeiraieq.svg" alt="IEQ Empreendedores" class="h-9 w-auto object-contain logo-img"/>
+  </a>
+  <div class="flex-1 mx-4 hidden md:block max-w-sm">
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+      <input id="headerSearch" type="text" placeholder="Buscar empreendedor..." oninput="filterCards()"
+        class="w-full pl-10 pr-4 h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary/40 focus:outline-none text-sm transition-all"/>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <button onclick="toggleTheme()" title="Alternar tema"
+      class="h-9 w-9 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 hover:text-primary dark:hover:text-primary border border-slate-200 dark:border-slate-700 transition-all">
+      <span class="material-symbols-outlined text-[20px] dark:hidden">dark_mode</span>
+      <span class="material-symbols-outlined text-[20px] hidden dark:block">light_mode</span>
+    </button>
+    <a id="myProfileLink" href="meu-perfil.html" class="hidden h-9 px-3 items-center gap-1.5 rounded-lg border border-primary/40 text-primary text-sm font-semibold hover:bg-primary/5 transition-all">
+      <span class="material-symbols-outlined text-[16px]">person</span><span class="hidden sm:inline">Meu perfil</span>
+    </a>
+    <a href="cadastro.html"
+      class="h-9 px-4 hidden sm:flex items-center justify-center rounded-lg bg-gradient-to-r from-primary to-accent text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary/30 transition-all">
+      Cadastre-se
+    </a>
+    <a href="painel.html" title="Painel Admin"
+      class="h-9 w-9 flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold text-xs border-2 border-white dark:border-slate-700 hover:scale-110 transition-transform">
+      ADM
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero-gradient relative overflow-hidden px-4 py-16 md:py-24 text-center">
+  <div class="absolute inset-0 opacity-10" style="background-image: url('https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1600&q=80'); background-size: cover; background-position: center;"></div>
+  <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(129,41,144,0.6), rgba(96,91,229,0.8));"></div>
+  <div class="relative z-10 max-w-3xl mx-auto">
+    <div class="inline-flex items-center gap-2 bg-white/20 glass px-4 py-1.5 rounded-full text-white/90 text-sm font-medium mb-6 border border-white/30">
+      <span class="material-symbols-outlined text-[18px]">church</span>
+      Comunidade IEQ
+    </div>
+    <h1 class="text-white text-3xl md:text-5xl font-black leading-tight mb-4">
+      Conecte-se com os<br/>empreendedores da sua church
+    </h1>
+    <p class="text-white/80 text-base md:text-lg max-w-xl mx-auto mb-8">
+      Uma lista telefônica viva dos irmãos empreendedores. Apoie, colabore e cresça junto com a nossa comunidade.
+    </p>
+    <div class="flex flex-wrap gap-3 justify-center">
+      <a href="cadastro.html"
+        class="px-6 py-3 bg-white text-primary font-bold rounded-xl hover:scale-105 transition-transform shadow-lg shadow-black/20">
+        Cadastrar meu negócio
+      </a>
+      <a href="#diretorio"
+        class="px-6 py-3 bg-white/20 glass text-white font-semibold rounded-xl border border-white/30 hover:bg-white/30 transition-all">
+        Ver diretório
+      </a>
+    </div>
+  </div>
+  <div class="relative z-10 mt-12 max-w-2xl mx-auto grid grid-cols-3 gap-4">
+    <div class="bg-white/15 glass rounded-xl p-4 border border-white/20">
+      <div id="statTotal" class="text-white text-2xl font-black">—</div>
+      <div class="text-white/70 text-xs font-medium">Empreendedores</div>
+    </div>
+    <div class="bg-white/15 glass rounded-xl p-4 border border-white/20">
+      <div id="statCats" class="text-white text-2xl font-black">—</div>
+      <div class="text-white/70 text-xs font-medium">Categorias</div>
+    </div>
+    <div class="bg-white/15 glass rounded-xl p-4 border border-white/20">
+      <div class="text-white text-2xl font-black">∞</div>
+      <div class="text-white/70 text-xs font-medium">Conexões</div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH + FILTERS -->
+<section id="diretorio" class="max-w-[1200px] mx-auto px-4 py-8">
+  <div class="flex flex-col gap-4 mb-6">
+    <div class="flex gap-3">
+      <div class="relative flex-1 md:hidden">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+        <input id="mobileSearch" type="text" placeholder="Buscar empreendedor..." oninput="syncSearch(this)"
+          class="w-full pl-10 pr-4 h-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark focus:ring-2 focus:ring-primary/40 focus:outline-none text-sm"/>
+      </div>
+      <button onclick="toggleSortOrder()" id="sortBtn"
+        class="h-12 px-4 flex items-center gap-2 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-sm font-medium hover:border-primary/50 hover:text-primary transition-all">
+        <span class="material-symbols-outlined text-[18px]">sort</span>
+        <span class="hidden sm:inline" id="sortLabel">A–Z</span>
+      </button>
+    </div>
+    <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <button onclick="filterByCategory('Todos')" data-cat="Todos" class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-active">
+        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">apps</span>Todos</span>
+      </button>
+      <button onclick="filterByCategory('Alimentação')"     data-cat="Alimentação"     class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🍽️ Alimentação</button>
+      <button onclick="filterByCategory('Tecnologia')"      data-cat="Tecnologia"      class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">💻 Tecnologia</button>
+      <button onclick="filterByCategory('Design')"          data-cat="Design"          class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🎨 Design</button>
+      <button onclick="filterByCategory('Jardinagem')"      data-cat="Jardinagem"      class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🌱 Jardinagem</button>
+      <button onclick="filterByCategory('Contabilidade')"   data-cat="Contabilidade"   class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">📊 Contabilidade</button>
+      <button onclick="filterByCategory('Construção')"      data-cat="Construção"      class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🔨 Construção</button>
+      <button onclick="filterByCategory('Saúde')"           data-cat="Saúde"           class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">💊 Saúde</button>
+      <button onclick="filterByCategory('Beleza')"          data-cat="Beleza"          class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">💄 Beleza</button>
+      <button onclick="filterByCategory('Educação')"        data-cat="Educação"        class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">📚 Educação</button>
+      <button onclick="filterByCategory('Jurídico')"        data-cat="Jurídico"        class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">⚖️ Jurídico</button>
+      <button onclick="filterByCategory('Imóveis')"         data-cat="Imóveis"         class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🏠 Imóveis</button>
+      <button onclick="filterByCategory('Seguros')"         data-cat="Seguros"         class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🛡️ Seguros</button>
+      <button onclick="filterByCategory('Transporte')"      data-cat="Transporte"      class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">🚗 Transporte</button>
+      <button onclick="filterByCategory('Financeiro')"      data-cat="Financeiro"      class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">💰 Financeiro</button>
+      <button onclick="filterByCategory('Marketing')"       data-cat="Marketing"       class="category-pill whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold transition-all pill-inactive">📣 Marketing</button>
+    </div>
+  </div>
+
+  <div class="flex justify-between items-center mb-4">
+    <p class="text-sm text-slate-500 dark:text-slate-400"><span id="resultsCount">—</span> empreendedores encontrados</p>
+    <div id="configAlert" class="hidden text-xs bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg">
+      ⚠️ Modo demo — configure <code>SHEETS_URL</code> no script
+    </div>
+  </div>
+
+  <div id="loadingGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div class="skeleton h-64 rounded-2xl"></div>
+    <div class="skeleton h-64 rounded-2xl"></div>
+    <div class="skeleton h-64 rounded-2xl"></div>
+    <div class="skeleton h-64 rounded-2xl hidden sm:block"></div>
+    <div class="skeleton h-64 rounded-2xl hidden sm:block"></div>
+    <div class="skeleton h-64 rounded-2xl hidden lg:block"></div>
+  </div>
+
+  <div id="cardsGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+  <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center">
+    <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+      <span class="material-symbols-outlined text-4xl text-primary">search_off</span>
+    </div>
+    <h3 class="text-xl font-bold mb-2">Nenhum resultado encontrado</h3>
+    <p class="text-slate-500 dark:text-slate-400 mb-6">Tente outro termo ou categoria.</p>
+    <button onclick="resetFilters()" class="px-6 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-colors">
+      Ver todos
+    </button>
+  </div>
+
+  <div id="paginationBar" class="hidden flex items-center justify-center gap-3 mt-8">
+    <button onclick="changePage(-1)" id="prevBtn" class="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+      <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+    </button>
+    <span id="pageInfo" class="text-sm font-semibold text-slate-600 dark:text-slate-400 min-w-[80px] text-center"></span>
+    <button onclick="changePage(1)" id="nextBtn" class="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+      <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+    </button>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="bg-gradient-to-r from-primary to-accent py-16 px-4 text-center">
+  <div class="max-w-2xl mx-auto">
+    <span class="material-symbols-outlined text-white/60 text-4xl mb-4 block">volunteer_activism</span>
+    <h2 class="text-white text-2xl md:text-4xl font-black mb-3">Você é empreendedor?</h2>
+    <p class="text-white/80 mb-8">Faça parte da nossa comunidade e conecte-se com centenas de irmãos que podem impulsionar seu negócio.</p>
+    <a href="cadastro.html" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary font-bold rounded-xl hover:scale-105 transition-transform shadow-xl shadow-black/20 text-lg">
+      <span class="material-symbols-outlined">person_add</span>
+      Quero me cadastrar
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-slate-800 py-8 px-4">
+  <div class="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="flex items-center gap-3">
+      <img src="primeiraieq.svg" alt="IEQ" class="h-7 w-auto opacity-70 logo-img"/>
+      <span class="text-sm text-slate-500">© 2025 Empreendedores IEQ. Todos os direitos reservados.</span>
+    </div>
+    <div class="flex gap-6 text-sm text-slate-500 dark:text-slate-400">
+      <a href="index.html" class="hover:text-primary transition-colors">Diretório</a>
+      <a href="cadastro.html" class="hover:text-primary transition-colors">Cadastro</a>
+      <a href="meu-perfil.html" class="hover:text-primary transition-colors">Meu perfil</a>
+      <a href="painel.html" class="hover:text-primary transition-colors">Admin</a>
+    </div>
+  </div>
+</footer>
+
+<!-- PROFILE MODAL -->
+<div id="profileModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/70 glass" onclick="closeModal(event)">
+  <div class="bg-white dark:bg-surface-dark w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl fade-in" onclick="event.stopPropagation()">
+    <div id="modalBanner" class="relative h-36 hero-gradient">
+      <button onclick="closeProfileModal()" class="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-1.5 transition-colors glass">
+        <span class="material-symbols-outlined text-[22px]">close</span>
+      </button>
+    </div>
+    <div class="px-6 pb-6 -mt-12 relative">
+      <div id="modalAvatar" class="w-24 h-24 rounded-2xl border-4 border-white dark:border-surface-dark shadow-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-2xl font-black"></div>
+      <div class="mt-4">
+        <div class="flex items-start justify-between gap-2 flex-wrap">
+          <div>
+            <h2 id="modalName" class="text-2xl font-black"></h2>
+            <span id="modalCategory" class="inline-block mt-1 px-3 py-0.5 rounded-full bg-accent/15 text-accent text-xs font-bold uppercase tracking-wider"></span>
+          </div>
+          <div id="modalLocation" class="flex items-center gap-1 text-slate-500 text-sm mt-1"></div>
+        </div>
+        <p id="modalBio" class="mt-4 text-slate-600 dark:text-slate-400 text-sm leading-relaxed"></p>
+        <div class="flex gap-2 mt-5">
+          <a id="modalWhatsapp" href="#" target="_blank" class="flex-1 h-10 bg-[#25D366] hover:opacity-90 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-opacity">
+            <span class="material-symbols-outlined text-[18px]">chat</span> WhatsApp
+          </a>
+          <a id="modalInstagram" href="#" target="_blank" class="flex-1 h-10 bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white rounded-xl font-bold flex items-center justify-center gap-1.5 text-sm transition-opacity">
+            <span class="material-symbols-outlined text-[18px]">photo_camera</span> Instagram
+          </a>
+          <button onclick="shareCurrentProfile()" class="h-10 w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary hover:text-primary transition-all" title="Compartilhar perfil">
+            <span class="material-symbols-outlined text-[20px]">share</span>
+          </button>
+        </div>
+        <a id="modalSite" href="#" target="_blank"
+          class="mt-3 w-full h-11 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold flex items-center justify-center gap-2 text-sm hover:border-primary hover:text-primary transition-all">
+          <span class="material-symbols-outlined text-[18px]">language</span> <span id="modalSiteText">Visitar site</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────────
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx_f0NMAdb3syp2OfK8-WSdkc0BxuyBz2POdMCXhZbC_5eoIFJF_Nlv8z5DkpxR2EOn/exec'; // Cole a URL após o deploy
+const DEMO_MODE  = !SHEETS_URL;
+
+const DEFAULT_DATA = [
+  { id:1, name:"Ana Silva",    category:"Jardinagem",   city:"São Paulo, SP",      bio:"Especialista em jardins verticais e paisagismo residencial.",             whatsapp:"5511999999991", instagram:"ana.jardins",        site:"",                          status:"aprovado" },
+  { id:2, name:"Marcos Rocha", category:"Contabilidade",city:"Rio de Janeiro, RJ", bio:"Consultoria contábil para MEI e pequenas empresas.",                     whatsapp:"5521999999992", instagram:"marcosrocha.cont",   site:"https://marcosrocha.com.br",status:"aprovado" },
+  { id:3, name:"Beatriz Lima", category:"Design",       city:"Curitiba, PR",       bio:"Identidade visual e design de interfaces para negócios digitais.",        whatsapp:"5541999999993", instagram:"beatrizlima.design", site:"https://bealima.design",   status:"aprovado" },
+  { id:4, name:"Carlos Souza", category:"Tecnologia",   city:"Belo Horizonte, MG", bio:"Automações e suporte técnico personalizado.",                             whatsapp:"5531999999994", instagram:"carlossouza.tech",   site:"",                          status:"aprovado" },
+  { id:5, name:"Juliana Costa",category:"Alimentação",  city:"Porto Alegre, RS",   bio:"Marmitas saudáveis e congelados artesanais.",                             whatsapp:"5551999999995", instagram:"juliana.marmitas",   site:"",                          status:"aprovado" },
+  { id:6, name:"Ricardo Alves",category:"Construção",   city:"Salvador, BA",       bio:"Reformas estruturais e acabamentos de alto padrão.",                      whatsapp:"5571999999996", instagram:"ricardoalves.obras", site:"https://ricardoalves.eng.br",status:"aprovado"},
+];
+
+let allData = [];
+let currentCategory = 'Todos';
+let currentSearch   = '';
+let sortAsc         = true;
+let page            = 1;
+let currentProfileId = null;
+const PER_PAGE      = 9;
+
+// ─── API ─────────────────────────────────────────────────
+async function apiGet(params) {
+  if (DEMO_MODE) return { ok: true, data: DEFAULT_DATA };
+  const url = new URL(SHEETS_URL);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const r = await fetch(url.toString());
+  return r.json();
+}
+
+async function loadData() {
+  if (DEMO_MODE) {
+    document.getElementById('configAlert').classList.remove('hidden');
+    allData = DEFAULT_DATA;
+    finishLoad();
+    return;
+  }
+  try {
+    const json = await apiGet({ action: 'list' });
+    allData = json.data || [];
+    finishLoad();
+  } catch(e) {
+    allData = [];
+    showToast('Erro ao carregar dados', 'bg-red-600');
+    finishLoad();
+  }
+}
+
+function finishLoad() {
+  document.getElementById('loadingGrid').remove();
+  document.getElementById('cardsGrid').classList.remove('hidden');
+  document.getElementById('cardsGrid').classList.add('grid');
+  updateStats();
+  renderCards();
+  const urlId = new URLSearchParams(window.location.search).get('id');
+  if (urlId) openProfile(Number(urlId));
+}
+
+// ─── RENDER ─────────────────────────────────────────────
+const COLORS = ['from-primary to-accent','from-purple-500 to-pink-500','from-blue-500 to-cyan-500','from-green-500 to-teal-500','from-amber-500 to-orange-500','from-rose-500 to-red-500'];
+function avatarColor(id) { return COLORS[(id-1) % COLORS.length]; }
+function getInitials(name) { return name.split(' ').slice(0,2).map(n=>n[0]||'').join('').toUpperCase(); }
+
+function getFiltered() {
+  let d = [...allData];
+  if (currentCategory !== 'Todos') d = d.filter(e=>e.category===currentCategory);
+  if (currentSearch.trim()) { const q=currentSearch.toLowerCase(); d=d.filter(e=>(e.name+e.bio+e.category+e.city).toLowerCase().includes(q)); }
+  d.sort((a,b) => sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+  return d;
+}
+
+function renderCards() {
+  const filtered = getFiltered();
+  const total    = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  if (page > totalPages) page = 1;
+
+  const paged = filtered.slice((page-1)*PER_PAGE, page*PER_PAGE);
+  const grid  = document.getElementById('cardsGrid');
+  const empty = document.getElementById('emptyState');
+  const pgBar = document.getElementById('paginationBar');
+
+  document.getElementById('resultsCount').textContent = total;
+
+  if (!total) {
+    grid.innerHTML=''; empty.classList.remove('hidden'); empty.classList.add('flex'); pgBar.classList.add('hidden'); return;
+  }
+  empty.classList.add('hidden'); empty.classList.remove('flex');
+
+  if (totalPages > 1) {
+    pgBar.classList.remove('hidden'); pgBar.classList.add('flex');
+    document.getElementById('pageInfo').textContent = `Pág. ${page} / ${totalPages}`;
+    document.getElementById('prevBtn').disabled = page === 1;
+    document.getElementById('nextBtn').disabled = page === totalPages;
+  } else {
+    pgBar.classList.add('hidden'); pgBar.classList.remove('flex');
+  }
+
+  grid.innerHTML = paged.map(e => `
+    <div class="bg-white dark:bg-surface-dark rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800 card-hover">
+      <div class="h-24 bg-gradient-to-br ${avatarColor(e.id)} relative">
+        <div class="absolute bottom-0 left-4 translate-y-1/2 w-14 h-14 rounded-xl border-[3px] border-white dark:border-surface-dark shadow-lg bg-gradient-to-br ${avatarColor(e.id)} flex items-center justify-center text-white text-lg font-black">
+          ${getInitials(e.name)}
+        </div>
+      </div>
+      <div class="pt-9 px-5 pb-5 flex flex-col gap-2">
+        <div>
+          <h3 class="font-bold text-base">${e.name}</h3>
+          <div class="flex items-center gap-1 text-slate-400 text-xs mt-0.5">
+            <span class="material-symbols-outlined text-[13px]">location_on</span>${e.city||''}
+          </div>
+        </div>
+        <span class="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary dark:bg-primary/20 text-xs font-bold w-fit">${e.category}</span>
+        <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">${e.bio}</p>
+        <div class="flex gap-2 mt-2">
+          <a href="https://wa.me/${e.whatsapp}" target="_blank" class="flex-1 h-10 bg-[#25D366] hover:opacity-90 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 transition-opacity">
+            <span class="material-symbols-outlined text-[15px]">chat</span> WhatsApp
+          </a>
+          <button onclick="openProfile(${e.id})" class="flex-1 h-10 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-semibold hover:border-primary hover:text-primary transition-all">
+            Ver perfil
+          </button>
+          <button onclick="shareProfile(${e.id})" title="Compartilhar" class="h-10 w-10 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-xl hover:border-primary hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-[18px]">share</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = allData.length;
+  document.getElementById('statCats').textContent  = new Set(allData.map(e=>e.category)).size;
+}
+
+// ─── FILTERS ────────────────────────────────────────────
+function filterByCategory(cat) {
+  currentCategory = cat; page = 1;
+  document.querySelectorAll('.category-pill').forEach(b => {
+    b.classList.toggle('pill-active', b.dataset.cat===cat);
+    b.classList.toggle('pill-inactive', b.dataset.cat!==cat);
+  });
+  renderCards();
+}
+
+function filterCards() { currentSearch = document.getElementById('headerSearch')?.value || ''; page = 1; renderCards(); }
+function syncSearch(el) {
+  currentSearch = el.value; const other = document.getElementById('headerSearch');
+  if (other) other.value = el.value; page = 1; renderCards();
+}
+
+function resetFilters() {
+  currentCategory='Todos'; currentSearch=''; page=1;
+  ['headerSearch','mobileSearch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('.category-pill').forEach(b=>{
+    b.classList.toggle('pill-active',b.dataset.cat==='Todos'); b.classList.toggle('pill-inactive',b.dataset.cat!=='Todos');
+  });
+  renderCards();
+}
+
+function toggleSortOrder() { sortAsc = !sortAsc; document.getElementById('sortLabel').textContent = sortAsc ? 'A–Z' : 'Z–A'; renderCards(); }
+function changePage(dir) {
+  const filtered = getFiltered();
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  page = Math.max(1, Math.min(totalPages, page + dir));
+  renderCards();
+  document.getElementById('diretorio').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── MODAL ──────────────────────────────────────────────
+function openProfile(id) {
+  const e = allData.find(x=>x.id===id); if (!e) return;
+  currentProfileId = id;
+  document.getElementById('modalName').textContent     = e.name;
+  document.getElementById('modalCategory').textContent = e.category;
+  document.getElementById('modalLocation').innerHTML   = `<span class="material-symbols-outlined text-[14px]">location_on</span>${e.city||''}`;
+  document.getElementById('modalBio').textContent      = e.bio;
+  document.getElementById('modalAvatar').textContent   = getInitials(e.name);
+
+  const wa = document.getElementById('modalWhatsapp'); wa.href = `https://wa.me/${e.whatsapp}`; wa.classList.toggle('hidden', !e.whatsapp);
+  const ig = document.getElementById('modalInstagram'); ig.href = e.instagram ? `https://instagram.com/${e.instagram.replace('@','')}` : '#'; ig.classList.toggle('hidden', !e.instagram);
+  const site = document.getElementById('modalSite');
+  if (e.site) { site.href=e.site; site.classList.remove('hidden'); document.getElementById('modalSiteText').textContent=e.site.replace(/https?:\/\//,''); } else { site.classList.add('hidden'); }
+
+  window.history.pushState(null,'',`?id=${id}`);
+  document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex'); document.body.classList.add('modal-open');
+}
+
+function closeModal(e) { if(e.target===document.getElementById('profileModal')) closeProfileModal(); }
+function closeProfileModal() {
+  currentProfileId = null;
+  document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); document.body.classList.remove('modal-open');
+  window.history.pushState(null,'',window.location.pathname);
+}
+
+function shareProfile(id) {
+  const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
+  if (navigator.share) {
+    const e = allData.find(x=>x.id===id); navigator.share({ title:`${e?.name} - Empreendedores IEQ`, url });
+  } else { navigator.clipboard?.writeText(url).then(()=>showToast('🔗 Link copiado!')); }
+}
+function shareCurrentProfile() { if(currentProfileId) shareProfile(currentProfileId); }
+
+function showToast(msg, cls='bg-slate-800') {
+  const t = document.getElementById('toast'); const m = document.getElementById('toastMsg');
+  m.textContent = msg; m.className = `px-5 py-3 rounded-xl shadow-xl text-sm font-semibold text-white ${cls}`;
+  t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'), 3000);
+}
+
+function toggleTheme() {
+  const d = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', d?'dark':'light');
+}
+
+// ─── INIT ────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeProfileModal(); });
+if (localStorage.getItem('ieq_my_profile')) {
+  const l = document.getElementById('myProfileLink');
+  if(l) { l.classList.remove('hidden'); l.classList.add('flex'); }
+}
+loadData();
+</script>
+</body>
+</html>
